@@ -1,1 +1,32 @@
+name: Traduire le contenu (DeepL)
 
+on:
+  workflow_dispatch:
+
+jobs:
+  traduire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer la dépendance DeepL
+        run: npm install deepl-node
+
+      - name: Lancer la traduction
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: node translate-content-deepl.js
+
+      - name: Déposer les fichiers générés dans le dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add translations-en.json skipped-pages.json INTEGRATION.md
+          git diff --staged --quiet || git commit -m "Traduction automatique du contenu (DeepL)"
+          git push
